@@ -4,10 +4,10 @@
     ViewData["Title"] = "Index";
 }
 @section featured {
-we are showing the latest @model.count() reviews.
+we are showing the latest @Model.Count() reviews.
 }
 <h1>The Latest Reviews</h1>
-We are showing the latest @Model.Count() reviews.
+
 <p>
     <a asp-action="Create">Create New</a>
 </p>
@@ -69,6 +69,7 @@ We are showing the latest @Model.Count() reviews.
                 <p>@item.City, @item.Country</p>
                 <span class="right">@Html.ActionLink("Edit", "Edit", new { id = item.Id })</span>
             </div>
+            <partial name="_review" model="item" />
         }
 
         <a asp-action="Create">Create New</a>
