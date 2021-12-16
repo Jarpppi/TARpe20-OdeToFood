@@ -1,32 +1,64 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AspNetCore.Unobtrusive.Ajax;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using OdeToFood.Data;
 using OdeToFood.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using X.PagedList;
 
 namespace OdeToFood.Controllers
 {
 	public class HomeController : Controller
 	{
 		private readonly ILogger<HomeController> _logger;
+		private ApplicationDbContext _context;
 
-		public HomeController(ILogger<HomeController> logger)
+		public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
 		{
 			_logger = logger;
+			_context = context;
 		}
 
-		public IActionResult Index()
+		public ActionResult Autocomplete(string term)
 		{
-			var controller = RouteData.Values["controller"];
-			var action = RouteData.Values["action"];
-			var id = RouteData.Values["id"];
+			var model = _context.Restaurants
+				.Where(r => r.Name.StartsWith(term))
+				.Take(10)
+				.Select(r => new
+				{
+					label = r.Name
+				});
+			return Json(model);
+		}
 
-			ViewBag.Message = $"{controller}::{action} {id}";
+		public IActionResult Index(string searchTerm = null, int page = 1)
+		{
+			var model = _context.Restaurants
+				.OrderByDescending(
+					r => r.Reviews.Average(review => review.Rating)
+					)
+				.Where(r => searchTerm == null || r.Name.Contains(searchTerm))
+				.Select(r => new RestaurantListViewModel
+				{
+					Id = r.Id,
+					Name = r.Name,
+					City = r.City,
+					Country = r.Country,
+					CountOfReviews = r.Reviews.Count
+				}).ToPagedList(page, 10);
 
-			return View();
+
+			if (Request.IsAjaxRequest())
+			{
+				return PartialView("_Restaurants", model);
+			}
+
+			return View(model);
 		}
 		public IActionResult About()
 		{

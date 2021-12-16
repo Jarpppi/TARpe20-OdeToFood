@@ -11,11 +11,11 @@ namespace OdeToFood.Controllers
 	[Log]
 	public class CuisineController : Controller
 	{
-		public IActionResult Search(string name="french")
+		public IActionResult Search(string name = "french")
 		{
 			throw new Exception("Something terrible happened!");
 
-			return Content("Esimene:"+ name );
+			return Content("Esimene:" + name);
 		}
 	}
 }
